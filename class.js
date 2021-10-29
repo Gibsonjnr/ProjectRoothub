@@ -3,7 +3,7 @@ class User{
         this.username = username;
         this.password = password;
         this.friendList = [];
-        this.Posts = ["Peter" , "Gibson"];
+        this.Posts = [["Hello world!!", 1]];
         this.gitHubProfile = profilePicture;
     }
 

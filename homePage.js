@@ -16,10 +16,11 @@ if(!sessionStorage.getItem('user')){
             const signedIn = loopUser 
             const createDiv = document.createElement('div');
             createDiv.innerHTML = `
-            Welcome User ${signedIn.username}
+            <h2>Welcome ${signedIn.username}</h2>
             <img class='userimg' src="./img_avatar.png" alt="">
-            POST
-            ${signedIn.Posts[signedIn.Posts.length - 1] || 'No post yet'}
+            <p>POST: 
+            ${signedIn.Posts[signedIn.Posts.length - 1][0] || 'No post yet'}
+            <span>${signedIn.Posts[signedIn.Posts.length - 1][1]} LIKES</span> </p>
             <textarea name="" id="textarea" cols="30" rows="10">
             </textarea> 
             <button class='btn'>Update Status</button>
@@ -41,7 +42,13 @@ if(!sessionStorage.getItem('user')){
         for(let getUser of users){
             if(getUser.username === user){
                 // getUser.Posts.push(getTextarea)  
-                getUser.Posts.push([getTextarea , 0]);
+                // Added by Sam
+
+                    // Store each status as an array. at undex 0 is the status
+                    // at index 1 is the no of likes which defaults to 1
+                    getUser.Posts.push([getTextarea , 1]);
+                // End of added by Sam
+
                 window.location.reload()
                 localStorage.setItem('users' , JSON.stringify(users))
             }
@@ -71,22 +78,56 @@ if(!sessionStorage.getItem('user')){
             const signedIn = loopUser 
             const createDiv = document.createElement('div');
             createDiv.innerHTML = `
+            <h3>
             Found: ${signedIn.username}
+            </h3>
             <img class='${signedIn.username}' src="./img_avatar.png" alt="">
-            POST
+            <p>POST
             ${signedIn.Posts[signedIn.Posts.length - 1] [0] ||  'No post yet'}
-            <button class='like'>Likes</button>
-            `//${signedIn.Posts[signedIn.Posts.length - 1] || 'No post yet'} 
+            </p>
+            <button class='like' id=${signedIn.username}>${signedIn.Posts[signedIn.Posts.length - 1][1]} LIKES</button>
+            `//${signedIn.Posts[signedIn.Posts.length - 1][1] || 'No post yet'} 
             const div = document.querySelector('.appendDiv');
             div.append(createDiv);
             //Like button!
-            const likeButton = document.querySelector('.like');
-            let count = 0;
-            likeButton.addEventListener('click' , (e)=> {
-                const likePost = document.querySelector('div');
-                likePost.innerText = `${count++} likes`
-                likePost.append(likeButton);
+
+            // Added by SAMUEL
+            const likeButtons = document.querySelectorAll('.like');
+            
+            likeButtons.forEach(btn => {
+                btn.addEventListener("click", updateLikes)
             })
+
+            function updateLikes(e){
+                // get friend's username
+                const friendName = e.target.id
+
+                // get friend from friends list and increase his likes by one
+                for(let loopUser of users){
+                    if(loopUser.username === friendName){
+                        // get no of likes for friends most recent post and increase by one
+                        let recent = loopUser.Posts.length - 1
+                        let likes = loopUser.Posts[recent][1]
+                        likes += 1
+
+                        // Update likes to reflect recent increase
+                        loopUser.Posts[recent][1] = likes
+
+                        // update database of users to reflect likes globally
+                        localStorage.setItem("users", JSON.stringify(users))
+
+                        // update likes by one locally
+                        const clickedBtn = e.target
+                        clickedBtn.innerHTML = `${likes} LIKES`
+
+                        // disable button to prevent it from being clicked
+                        clickedBtn.disabled = true;
+                    }
+                }
+            
+            }
+
+            // End of added by Sam
             
             fetch(`https://api.github.com/users/${signedIn.gitHubProfile}`).then(res => {
             return res.json()
